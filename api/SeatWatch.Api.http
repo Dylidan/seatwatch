@@ -1,0 +1,6 @@
+@SeatWatch.Api_HostAddress = http://localhost:5073
+
+GET {{SeatWatch.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
