@@ -15,4 +15,31 @@ app.MapGet("/events/{id}", async (int id, AppDbContext db) =>
     return ev is null ? Results.NotFound() : Results.Ok(ev);
 });
 
+app.MapGet("/alerts", async (AppDbContext db) => await db.PriceAlerts.ToListAsync());
+
+app.MapPost("/alerts", async (CreateAlertRequest request, AppDbContext db) =>
+{
+    if (request.TargetPrice <= 0)
+        return Results.BadRequest("Target price must be greater than zero.");
+
+    var ev = await db.Events.FindAsync(request.EventId);
+    if (ev is null)
+        return Results.NotFound("Event not found.");
+
+    var alert = new PriceAlert
+    {
+        EventId = request.EventId,
+        Email = request.Email,
+        TargetPrice = request.TargetPrice,
+        CreatedAt = DateTime.UtcNow
+    };
+
+    db.PriceAlerts.Add(alert);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/alerts/{alert.Id}", alert);
+});
+
 app.Run();
+
+record CreateAlertRequest(int EventId, string Email, decimal TargetPrice);

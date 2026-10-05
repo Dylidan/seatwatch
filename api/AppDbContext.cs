@@ -4,6 +4,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Event> Events => Set<Event>();
 
+    public DbSet<PriceAlert> PriceAlerts => Set<PriceAlert>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Event>().HasData(

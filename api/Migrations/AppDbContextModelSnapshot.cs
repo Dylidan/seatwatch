@@ -73,6 +73,48 @@ namespace SeatWatch.Api.Migrations
                             Venue = "Richard Rodgers Theatre"
                         });
                 });
+
+            modelBuilder.Entity("PriceAlert", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsTriggered")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("TargetPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("PriceAlerts");
+                });
+
+            modelBuilder.Entity("PriceAlert", b =>
+                {
+                    b.HasOne("Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
 #pragma warning restore 612, 618
         }
     }
