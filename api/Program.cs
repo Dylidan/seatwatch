@@ -7,7 +7,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHostedService<PriceCheckService>();
 
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()));
+
 var app = builder.Build();
+
+app.UseCors();
 
 app.MapGet("/events", async (AppDbContext db) => await db.Events.ToListAsync());
 

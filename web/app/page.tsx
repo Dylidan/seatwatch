@@ -1,3 +1,5 @@
+import AlertForm from "./AlertForm";
+
 type TicketEvent = {
   id: number;
   name: string;
@@ -18,17 +20,20 @@ export default async function Home() {
       </p>
 
       <ul className="mt-6 space-y-3">
-        {events.map((ev) => (
-          <li key={ev.id} className="flex items-center justify-between rounded-lg border p-4">
-            <div>
+       {events.map((ev) => (
+         <li key={ev.id} className="rounded-lg border p-4">
+           <div className="flex items-center justify-between">
+             <div>
               <p className="font-semibold">{ev.name}</p>
               <p className="text-sm text-gray-500">
-                {ev.venue} · {new Date(ev.date).toLocaleDateString("en-US", { timeZone: "UTC" })}
+               {ev.venue} · {new Date(ev.date).toLocaleDateString("en-US", { timeZone: "UTC" })}
               </p>
             </div>
             <p className="text-xl font-bold">${ev.lowestPrice.toFixed(2)}</p>
-          </li>
-        ))}
+          </div>
+          <AlertForm eventId={ev.id} />
+        </li>
+      ))}
       </ul>
     </main>
   );
