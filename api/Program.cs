@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SeatWatch")));
 
+builder.Services.AddHostedService<PriceCheckService>();
+
 var app = builder.Build();
 
 app.MapGet("/events", async (AppDbContext db) => await db.Events.ToListAsync());
