@@ -13,8 +13,8 @@ when the lowest ticket price drops to it.
   any alerts whose target has been reached
 
 Prices are simulated: the background job moves each one up or down by up
-to 10% to imitate a live market. Triggered alerts are written to the
-server log. See the roadmap for what's next.
+to 10% to imitate a live market. Triggered alerts are emailed through the Resend API.
+ See the roadmap for what's next.
 
 ## Tech stack
 
@@ -58,6 +58,7 @@ You need the .NET SDK, Node.js and PostgreSQL installed.
 ```
    cd api
    dotnet user-secrets set "ConnectionStrings:SeatWatch" "Host=localhost;Port=5432;Database=seatwatch;Username=postgres;Password=YOUR_PASSWORD"
+   dotnet user-secrets set "Resend:ApiKey" "YOUR_RESEND_KEY"
    dotnet ef database update
    dotnet run
 ```
@@ -77,7 +78,7 @@ You need the .NET SDK, Node.js and PostgreSQL installed.
 ## Roadmap
 
 - Pull real event data from a public events API
-- Send alert emails
+- Retry failed emails
 - Add automated tests
 - Deploy to Azure
 

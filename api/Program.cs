@@ -7,6 +7,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHostedService<PriceCheckService>();
 
+builder.Services.AddHttpClient<EmailService>();
+
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
         policy.WithOrigins("http://localhost:3000")

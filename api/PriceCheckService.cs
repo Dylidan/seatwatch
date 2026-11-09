@@ -28,11 +28,15 @@ public class PriceCheckService(IServiceScopeFactory scopeFactory, ILogger<PriceC
                 .Where(a => !a.IsTriggered && a.Event!.LowestPrice <= a.TargetPrice)
                 .ToListAsync(stoppingToken);
 
+            var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
+
             foreach (var alert in hitAlerts)
             {
                 alert.IsTriggered = true;
                 logger.LogInformation("ALERT for {Email}: {Name} dropped to ${Price} (target ${Target})",
                     alert.Email, alert.Event!.Name, alert.Event.LowestPrice, alert.TargetPrice);
+
+                await emailService.SendAlertAsync(alert, stoppingToken);
             }
             await db.SaveChangesAsync(stoppingToken);
         }
