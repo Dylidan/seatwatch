@@ -34,4 +34,8 @@ used ASP.NET Core, PostgreSQL or Next.js before this project.
   worked. I added a log line for successful sends, which surfaced the real
   error: EmailService was never registered for dependency injection. I
   found it by reading the stack trace down to the line in my own code.
-
+  - **Making the app survive outages.** Earlier, one database outage crashed
+  the whole API and showed users an error page. I wrapped each background
+  run in try/catch so failures are logged and retried on the next run, and
+  made the website show a friendly message when the API is down. I tested
+  it by stopping PostgreSQL mid-run and watching the app recover on its own.

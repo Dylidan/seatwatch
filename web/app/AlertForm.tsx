@@ -8,8 +8,9 @@ export default function AlertForm({ eventId }: { eventId: number }) {
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  e.preventDefault();
 
+  try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -17,7 +18,10 @@ export default function AlertForm({ eventId }: { eventId: number }) {
     });
 
     setMessage(res.ok ? "Alert saved!" : "Something went wrong. Check the price and try again.");
+  } catch {
+    setMessage("Can't reach the server right now. Please try again in a minute.");
   }
+}
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 flex flex-wrap items-center gap-2">

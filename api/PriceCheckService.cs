@@ -9,36 +9,51 @@ public class PriceCheckService(IServiceScopeFactory scopeFactory, ILogger<PriceC
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            using var scope = scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            // Part 1: imitate the market by moving each price up or down by up to 10%
-            var events = await db.Events.ToListAsync(stoppingToken);
-            foreach (var ev in events)
+            try
             {
-                var change = (decimal)(Random.Shared.NextDouble() * 0.2 - 0.1);
-                ev.LowestPrice = Math.Round(ev.LowestPrice * (1 + change), 2);
-                logger.LogInformation("{Name} is now ${Price}", ev.Name, ev.LowestPrice);
+                await RunCheckAsync(stoppingToken);
             }
-            await db.SaveChangesAsync(stoppingToken);
-
-            // Part 2: find alerts whose target price has been reached
-            var hitAlerts = await db.PriceAlerts
-                .Include(a => a.Event)
-                .Where(a => !a.IsTriggered && a.Event!.LowestPrice <= a.TargetPrice)
-                .ToListAsync(stoppingToken);
-
-            var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
-
-            foreach (var alert in hitAlerts)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                alert.IsTriggered = true;
-                logger.LogInformation("ALERT for {Email}: {Name} dropped to ${Price} (target ${Target})",
-                    alert.Email, alert.Event!.Name, alert.Event.LowestPrice, alert.TargetPrice);
-
-                await emailService.SendAlertAsync(alert, stoppingToken);
+                break;
             }
-            await db.SaveChangesAsync(stoppingToken);
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Price check failed. Trying again on the next run.");
+            }
         }
+    }
+
+    private async Task RunCheckAsync(CancellationToken stoppingToken)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
+
+        // Part 1: imitate the market by moving each price up or down by up to 10%
+        var events = await db.Events.ToListAsync(stoppingToken);
+        foreach (var ev in events)
+        {
+            var change = (decimal)(Random.Shared.NextDouble() * 0.2 - 0.1);
+            ev.LowestPrice = Math.Round(ev.LowestPrice * (1 + change), 2);
+            logger.LogInformation("{Name} is now ${Price}", ev.Name, ev.LowestPrice);
+        }
+        await db.SaveChangesAsync(stoppingToken);
+
+        // Part 2: find alerts whose target price has been reached, and email them
+        var hitAlerts = await db.PriceAlerts
+            .Include(a => a.Event)
+            .Where(a => !a.IsTriggered && a.Event!.LowestPrice <= a.TargetPrice)
+            .ToListAsync(stoppingToken);
+
+        foreach (var alert in hitAlerts)
+        {
+            alert.IsTriggered = true;
+            logger.LogInformation("ALERT for {Email}: {Name} dropped to ${Price} (target ${Target})",
+                alert.Email, alert.Event!.Name, alert.Event.LowestPrice, alert.TargetPrice);
+
+            await emailService.SendAlertAsync(alert, stoppingToken);
+        }
+        await db.SaveChangesAsync(stoppingToken);
     }
 }

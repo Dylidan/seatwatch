@@ -86,3 +86,5 @@ required, type="email", min="1" make the browser check the input before sending.
 
 I hit a CORS error, learned why browsers block cross-site requests, and fixed it with a named-origin policy
 CORS (Cross-Origin Resource Sharing) is the way a server grants that permission.
+
+One trade-off to understand: errors no longer crash the app, so they’re easier to miss. Last session’s missing-registration bug would now print a red line every 30 seconds while the server kept running. A crash is loud, and a logged error is quiet. That’s why real companies use monitoring tools that alert someone when errors pile up. It’s a good point to raise in an interview.
